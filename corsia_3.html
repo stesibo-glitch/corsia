@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Corsia</title>
+<meta name="theme-color" content="#06171F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Corsia">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%2306171F'/%3E%3Cg fill='none' stroke='%232ED3B7' stroke-width='11' stroke-linecap='round'%3E%3Cpath d='M28 74c12-9 22-9 34 0s22 9 34 0 22-9 34 0 22 9 22 0'/%3E%3Cpath d='M28 106c12-9 22-9 34 0s22 9 34 0 22-9 34 0 22 9 22 0'/%3E%3C/g%3E%3Ccircle cx='126' cy='44' r='13' fill='%232ED3B7'/%3E%3C/svg%3E">
+<style>
+:root{
+  --deep:#06171F; --pool:#0C2733; --panel:#10333F; --line:#1C4C5C; --line2:#153B49;
+  --ink:#E8F3F4; --mut:#7FA1AC; --faint:#48707D;
+  --crawl:#2ED3B7; --dorso:#4C8DFF; --rana:#F5A623; --delfino:#A97BFF; --misto:#7FA1AC;
+  --aer:#2ED3B7; --sog:#F5A623; --ana:#FF5F6D;
+  --top:env(safe-area-inset-top,0px); --bot:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;overscroll-behavior-y:contain}
+body{
+  background:var(--deep);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;
+  padding-bottom:calc(70px + var(--bot));
+}
+.num{font-variant-numeric:tabular-nums}
+button,input,select{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--crawl);outline-offset:2px}
+
+/* ---------- intestazione ---------- */
+header{
+  position:sticky;top:0;z-index:20;
+  padding:calc(var(--top) + 10px) 16px 10px;
+  background:rgba(6,23,31,.93);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line2);
+  display:flex;align-items:center;gap:10px;
+}
+header h1{font-size:15px;margin:0;letter-spacing:.24em;font-weight:700;text-transform:uppercase;flex:1}
+header h1 span{color:var(--crawl)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:0 0 auto}
+.dot.on{background:var(--crawl)}
+.dot.busy{background:var(--sog);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+#btnRefresh{
+  background:none;border:1px solid var(--line);border-radius:50%;
+  width:36px;height:36px;color:var(--mut);display:grid;place-items:center;padding:0;flex:0 0 auto;
+}
+#btnRefresh svg{width:17px;height:17px}
+#btnRefresh.spin svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hdrline{height:2px;background:var(--panel);position:sticky;top:0;z-index:19}
+.hdrline i{display:block;height:100%;width:0;background:var(--crawl);transition:width .3s}
+
+/* ---------- struttura ---------- */
+main{padding:14px 16px 8px;max-width:640px;margin:0 auto}
+.pane{display:none}
+.pane.on{display:block}
+section{
+  background:var(--pool);border:1px solid var(--line2);
+  border-radius:14px;padding:15px;margin-bottom:12px;
+}
+h2{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
+   margin:0 0 12px;font-weight:700}
+h3{font-size:14px;margin:0 0 8px;font-weight:600}
+.note{font-size:12.5px;color:var(--mut);line-height:1.5;margin:10px 0 0}
+.note.warn{border-left:2px solid var(--sog);padding-left:10px}
+.empty{color:var(--faint);font-size:13.5px;text-align:center;padding:26px 8px;line-height:1.6}
+
+/* ---------- vetrina ultima nuotata ---------- */
+.hero{
+  background:linear-gradient(160deg,#123243 0%,#0C2733 60%);
+  border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:12px;
+}
+.hero .when{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--crawl);font-weight:700}
+.hero .big{font-size:40px;font-weight:700;letter-spacing:-.02em;margin:6px 0 0;line-height:1}
+.hero .big small{font-size:17px;color:var(--mut);font-weight:600;letter-spacing:0}
+.hero .sub{color:var(--mut);font-size:14px;margin-top:6px}
+.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}
+.chip{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:9px;
+      padding:7px 11px;font-size:12px;color:var(--mut);min-width:0}
+.chip b{display:block;color:var(--ink);font-size:17px;font-weight:700;line-height:1.2}
+.navsw{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.navsw button{background:var(--panel);border:1px solid var(--line);color:var(--mut);
+  border-radius:10px;padding:9px 14px;font-size:13px;min-width:52px}
+.navsw button:disabled{opacity:.3}
+.navsw span{font-size:12px;color:var(--faint);text-align:center;flex:1}
+
+/* ---------- barre ---------- */
+.rows{display:flex;flex-direction:column;gap:13px}
+.rw .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}
+.rw .nm{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px;min-width:0}
+.rw .nm i{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.rw .vl{font-size:13px;color:var(--mut);white-space:nowrap}
+.rw .track{height:8px;background:var(--panel);border-radius:5px;overflow:hidden;display:flex}
+.rw .track i{display:block;height:8px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.rw .meta{font-size:11.5px;color:var(--faint);margin-top:4px}
+.stack{display:flex;height:30px;border-radius:9px;overflow:hidden;background:var(--panel)}
+.stack i{display:block;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.keys{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:11px;font-size:12px;color:var(--mut)}
+.keys i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px}
+
+/* ---------- corpo ---------- */
+.bodywrap{display:flex;justify-content:center;gap:6px}
+.bodywrap figure{margin:0;text-align:center;flex:1 1 0;min-width:0;max-width:190px}
+.bodywrap svg{display:block;width:100%;height:auto}
+.bodywrap figcaption{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:4px}
+svg .m{stroke:#08202B;stroke-width:.6;transition:fill .5s}
+.mus{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.mus .r[hidden]{display:none}
+.mus .r{display:grid;grid-template-columns:1fr 92px 40px;align-items:center;gap:9px;font-size:13px}
+.mus .r span:first-child{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mus .bar{height:7px;background:var(--panel);border-radius:4px;overflow:hidden}
+.mus .bar i{display:block;height:7px;border-radius:4px}
+.mus .r em{font-style:normal;text-align:right;font-size:12px;color:var(--faint)}
+.more{background:none;border:0;color:var(--crawl);font-size:13px;padding:10px 0 0;width:100%}
+.blocks{display:flex;flex-direction:column;gap:8px}
+.blk{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line2);
+     border-radius:10px;padding:9px 10px}
+.blk .bi{flex:1;min-width:0}
+.blk .bn{display:block;font-size:13.5px;font-weight:600}
+.blk .bm{display:block;font-size:11px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk select{width:auto;flex:0 0 auto;padding:8px 7px;font-size:13px;border-radius:8px;background:var(--deep);max-width:110px}
+
+/* ---------- mesi ---------- */
+.chart{display:flex;align-items:flex-end;gap:4px;height:150px;padding-top:4px}
+.chart .col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart .col b{font-size:9.5px;color:var(--faint);font-weight:600}
+.chart .col .bx{width:100%;display:flex;flex-direction:column;border-radius:4px 4px 0 0;overflow:hidden}
+.chart .col span{font-size:8.5px;color:var(--faint);white-space:nowrap}
+.mcard{border:1px solid var(--line2);border-radius:12px;padding:13px;margin-bottom:9px;background:rgba(255,255,255,.014)}
+.mcard .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.mcard .hd b{font-size:15px}
+.mcard .hd em{font-style:normal;font-size:12px;color:var(--faint)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.grid4 div{background:var(--panel);border-radius:8px;padding:7px 3px}
+.grid4 b{display:block;font-size:14px;font-weight:700}
+.grid4 small{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.delta{font-size:11.5px}
+
+/* ---------- impostazioni ---------- */
+label{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:5px}
+input,select{background:var(--deep);border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:12px;width:100%;font-size:16px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.btn{background:var(--panel);color:var(--ink);border:1px solid var(--line);
+     border-radius:10px;padding:12px 14px;font-size:14px;width:100%;margin-bottom:8px}
+.btn.pri{background:var(--crawl);color:#04222B;border-color:var(--crawl);font-weight:700}
+.btn.gh{background:none;border-color:transparent;color:var(--mut)}
+.btn.gh:active{color:var(--ana)}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:22px 14px;text-align:center;font-size:13.5px;color:var(--mut)}
+details summary{cursor:pointer;color:var(--mut);font-size:13.5px;padding:6px 0}
+details[open] summary{color:var(--crawl)}
+.prog{height:4px;background:var(--panel);border-radius:3px;overflow:hidden;margin:12px 0 8px}
+.prog i{display:block;height:100%;width:0;background:var(--crawl);transition:width .3s}
+
+/* ---------- barra di navigazione ---------- */
+nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(10,32,41,.96);backdrop-filter:blur(16px);
+  border-top:1px solid var(--line2);
+  display:flex;padding-bottom:var(--bot);
+}
+nav button{
+  flex:1;background:none;border:0;color:var(--faint);
+  padding:9px 4px 8px;font-size:10px;letter-spacing:.06em;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+nav button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-selected=true]{color:var(--crawl)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(84px + var(--bot));background:var(--panel);border:1px solid var(--crawl);
+  color:var(--ink);padding:11px 17px;border-radius:22px;font-size:13px;z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .25s;max-width:88vw;text-align:center}
+.toast.on{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(min-width:620px){ .hero .big{font-size:46px} .chips{grid-template-columns:repeat(4,1fr)} }
+</style>
+</head>
+<body>
+
+<div class="hdrline"><i id="hdrProg"></i></div>
+<header>
+  <span class="dot" id="dot" title="stato collegamento"></span>
+  <h1>Cor<span>sia</span></h1>
+  <button id="btnRefresh" aria-label="Aggiorna">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+  </button>
+</header>
+
+<main>
+  <!-- ============ ULTIMA NUOTATA ============ -->
+  <div class="pane on" id="paneLast">
+    <div class="navsw" id="swNav" hidden>
+      <button id="swPrev" aria-label="Nuotata precedente">‹</button>
+      <span id="swPos"></span>
+      <button id="swNext" aria-label="Nuotata successiva">›</button>
+    </div>
+    <div id="lastBody"></div>
+  </div>
+
+  <!-- ============ MESI ============ -->
+  <div class="pane" id="paneMonth">
+    <section>
+      <h2>Volume mensile</h2>
+      <div class="chart" id="mChart"></div>
+      <div class="keys" id="mKeys"></div>
+      <p class="note" id="mNote"></p>
+    </section>
+    <div id="mCards"></div>
+  </div>
+
+  <!-- ============ IMPOSTAZIONI ============ -->
+  <div class="pane" id="paneSet">
+    <section>
+      <h2>Collegamento</h2>
+      <div id="syncOff">
+        <p class="note" style="margin-top:0">Garmin sincronizza da sola su <b>intervals.icu</b> (gratuito).
+           Da lì Corsia scarica le nuotate con il file .fit originale, quindi con gli stili vasca per vasca.</p>
+        <div style="margin:14px 0 10px">
+          <label for="icuKey">Chiave API intervals.icu</label>
+          <input type="password" id="icuKey" placeholder="incolli qui la chiave" autocomplete="off" spellcheck="false">
+        </div>
+        <button class="btn pri" id="btnConnect">Collega</button>
+        <details>
+          <summary>Dove trovo la chiave</summary>
+          <p class="note"><b>1.</b> Account gratuito su intervals.icu.<br>
+             <b>2.</b> <i>Settings → Connections</i>: colleghi Garmin Connect. Da lì in poi ogni allenamento
+             arriva da solo.<br>
+             <b>3.</b> <i>Settings → Developer Settings</i>, in fondo alla pagina: c'è la sua API key.<br><br>
+             La chiave resta sul telefono e serve solo a chiamare intervals.icu.</p>
+        </details>
+      </div>
+      <div id="syncOn" hidden>
+        <h3 style="margin-bottom:2px">Collegato</h3>
+        <p class="note" id="syncWho" style="margin-top:0"></p>
+        <div class="prog" id="syncProg" hidden><i></i></div>
+        <p class="note" id="syncStatus"></p>
+        <button class="btn" id="btnBackfill" style="margin-top:12px">Recupera lo storico</button>
+        <button class="btn gh" id="btnStop" hidden>Ferma</button>
+        <button class="btn gh" id="btnDisconnect">Scollega</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Parametri</h2>
+      <div class="f2">
+        <div><label for="age">Età</label><input type="number" id="age" inputmode="numeric" min="10" max="99" value="45"></div>
+        <div><label for="hrmax">FC max</label><input type="number" id="hrmax" inputmode="numeric" min="120" max="220" value="175"></div>
+        <div><label for="hrrest">FC riposo</label><input type="number" id="hrrest" inputmode="numeric" min="30" max="90" value="55"></div>
+        <div><label for="pool">Vasca (m)</label><input type="number" id="pool" inputmode="numeric" min="10" max="100" value="25"></div>
+        <div><label for="kg">Peso (kg)</label><input type="number" id="kg" inputmode="decimal" min="35" max="200" step="0.5" value="75"></div>
+      </div>
+      <label for="period">Mesi da mostrare</label>
+      <select id="period">
+        <option value="30">Ultimi 30 giorni</option>
+        <option value="90">Ultimi 90 giorni</option>
+        <option value="365">Ultimo anno</option>
+        <option value="0" selected>Tutto lo storico</option>
+      </select>
+      <p class="note">La FC max si aggiorna con l'età (Tanaka: 208 − 0,7 × età) finché non la corregge a mano.
+         Il periodo vale per la scheda <b>Mesi</b>; l'ultima nuotata si vede sempre.
+         Il peso serve solo al calcolo delle calorie: se cambia, le sintesi si ricalcolano tutte.</p>
+    </section>
+
+    <section>
+      <h2>File</h2>
+      <div class="drop" id="drop">Tocchi per caricare .fit, .csv, .tcx o un archivio Corsia</div>
+      <input type="file" id="file" multiple accept=".fit,.csv,.tcx,.json,.FIT,.CSV,.TCX,.JSON" hidden>
+      <button class="btn" id="btnExport" style="margin-top:12px">Salva archivio</button>
+      <button class="btn" id="btnDemo">Dati di esempio</button>
+      <button class="btn gh" id="btnClear">Svuota tutto</button>
+      <p class="note" id="stats"></p>
+    </section>
+
+    <section>
+      <h2>Installare sul telefono</h2>
+      <p class="note" style="margin-top:0">
+        <b>iPhone:</b> apra la pagina in Safari, tocchi <i>Condividi</i> e poi <i>Aggiungi a Home</i>.<br>
+        <b>Android:</b> menu di Chrome, <i>Installa app</i> o <i>Aggiungi a schermata Home</i>.<br><br>
+        Da lì si apre a tutto schermo come un'app e si aggiorna da sola a ogni apertura.</p>
+    </section>
+  </div>
+</main>
+
+<nav role="tablist">
+  <button role="tab" data-pane="paneLast" aria-selected="true">
+    <svg viewBox="0 0 24 24"><path d="M2 15c2-1.6 3.7-1.6 5.5 0s3.5 1.6 5.5 0 3.7-1.6 5.5 0 3.5 1.6 5.5 0"/><path d="M2 20c2-1.6 3.7-1.6 5.5 0s3.5 1.6 5.5 0 3.7-1.6 5.5 0 3.5 1.6 5.5 0"/><circle cx="17" cy="6" r="2.4"/><path d="M6 12l5-3 3 2"/></svg>
+    Ultima
+  </button>
+  <button role="tab" data-pane="paneMonth" aria-selected="false">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M7.5 17v-3M12 17v-5M16.5 17v-2"/></svg>
+    Mesi
+  </button>
+  <button role="tab" data-pane="paneSet" aria-selected="false">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H1a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 2.6 7a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H7a1.6 1.6 0 0 0 1-1.5V1a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V7a1.6 1.6 0 0 0 1.5 1H23a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" transform="scale(.86) translate(2 2)"/></svg>
+    Impostazioni
+  </button>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   1. MODELLO
+   ========================================================================= */
+const STROKES = {
+  crawl:   {label:"Crawl",   color:"#2ED3B7"},
+  dorso:   {label:"Dorso",   color:"#4C8DFF"},
+  rana:    {label:"Rana",    color:"#F5A623"},
+  delfino: {label:"Delfino", color:"#A97BFF"},
+  misto:   {label:"Misto / non definito", color:"#7FA1AC"}
+};
+
+// coefficienti 0..1 — stessa matrice della mappa anatomica in PDF
+const MUSCLES = {
+  "Gran dorsale":     {crawl:1.00, dorso:1.00, rana:0.50, delfino:1.00, key:"dorsale"},
+  "Grande pettorale": {crawl:0.90, dorso:0.30, rana:0.90, delfino:1.00, key:"pettorale"},
+  "Deltoidi":         {crawl:0.85, dorso:0.95, rana:0.70, delfino:0.95, key:"deltoide"},
+  "Tricipite":        {crawl:0.90, dorso:0.90, rana:0.60, delfino:0.95, key:"tricipite"},
+  "Bicipite":         {crawl:0.55, dorso:0.40, rana:0.80, delfino:0.60, key:"bicipite"},
+  "Trapezio/romboidi":{crawl:0.60, dorso:0.70, rana:0.50, delfino:0.90, key:"trapezio"},
+  "Avambraccio":      {crawl:0.60, dorso:0.55, rana:0.70, delfino:0.65, key:"avambraccio"},
+  "Retto addominale": {crawl:0.60, dorso:0.85, rana:0.75, delfino:1.00, key:"addome"},
+  "Obliqui":          {crawl:0.95, dorso:0.85, rana:0.45, delfino:0.80, key:"obliquo"},
+  "Erettori spinali": {crawl:0.55, dorso:0.80, rana:0.85, delfino:1.00, key:"erettori"},
+  "Ileopsoas":        {crawl:0.80, dorso:0.60, rana:0.85, delfino:0.95, key:"ileopsoas"},
+  "Grande gluteo":    {crawl:0.50, dorso:0.75, rana:1.00, delfino:0.95, key:"gluteo"},
+  "Quadricipite":     {crawl:0.60, dorso:0.90, rana:0.95, delfino:0.80, key:"quadricipite"},
+  "Ischiocrurali":    {crawl:0.45, dorso:0.55, rana:0.80, delfino:0.75, key:"ischiocrurali"},
+  "Adduttori":        {crawl:0.20, dorso:0.20, rana:1.00, delfino:0.30, key:"adduttore"},
+  "Tricipite surale": {crawl:0.50, dorso:0.50, rana:0.50, delfino:0.60, key:"polpaccio"},
+  "Tibiale/peronei":  {crawl:0.35, dorso:0.45, rana:0.80, delfino:0.50, key:"tibiale"}
+};
+// coefficiente per uno stile noto; per "misto"/ignoto la media dei quattro
+function coefFor(coef, stroke){
+  if(coef[stroke] != null) return coef[stroke];
+  return (coef.crawl + coef.dorso + coef.rana + coef.delfino) / 4;
+}
+
+const MUSCLE_COLOR = {
+  "Gran dorsale":"#2ED3B7","Grande pettorale":"#2ED3B7","Deltoidi":"#2ED3B7","Tricipite":"#2ED3B7",
+  "Bicipite":"#2ED3B7","Trapezio/romboidi":"#2ED3B7","Avambraccio":"#2ED3B7",
+  "Retto addominale":"#4C8DFF","Obliqui":"#4C8DFF","Erettori spinali":"#4C8DFF","Ileopsoas":"#4C8DFF",
+  "Grande gluteo":"#F5A623","Quadricipite":"#F5A623","Ischiocrurali":"#F5A623","Adduttori":"#F5A623",
+  "Tricipite surale":"#F5A623","Tibiale/peronei":"#F5A623"
+};
+
+let state = {
+  athlete:{age:45, hrMax:175, hrRest:55, pool:25, kg:75},
+  icuKey:"", icuName:"", icuLast:null, period:"0",
+  sessions:[]   // {id,date,source,name,icuId,segments:[{stroke,meters,seconds,hr}]}
+};
+
+/* =========================================================================
+   2. PERSISTENZA (window.storage se disponibile; sempre export/import JSON)
+   ========================================================================= */
+const KEY = "corsia:v1";
+
+/* IndexedDB come archivio primario (regge centinaia di sessioni), localStorage
+   come ripiego. window.storage viene usato solo se l'ambiente lo espone. */
+const idb = {
+  db:null,
+  open(){
+    if(this._p) return this._p;
+    this._p = new Promise(res => {
+      if(!("indexedDB" in window)) return res(null);
+      let rq;
+      try{ rq = indexedDB.open("corsia", 1); }catch(e){ return res(null); }
+      rq.onupgradeneeded = () => rq.result.createObjectStore("kv");
+      rq.onsuccess = () => res(rq.result);
+      rq.onerror = () => res(null);
+      setTimeout(() => res(null), 3000);            // Safari in modalità privata
+    });
+    return this._p;
+  },
+  async get(k){
+    const db = await this.open(); if(!db) return null;
+    return new Promise(res => {
+      try{
+        const rq = db.transaction("kv","readonly").objectStore("kv").get(k);
+        rq.onsuccess = () => res(rq.result ?? null);
+        rq.onerror = () => res(null);
+      }catch(e){ res(null); }
+    });
+  },
+  async set(k, v){
+    const db = await this.open(); if(!db) return false;
+    return new Promise(res => {
+      try{
+        const tx = db.transaction("kv","readwrite");
+        tx.objectStore("kv").put(v, k);
+        tx.oncomplete = () => res(true);
+        tx.onerror = () => res(false);
+      }catch(e){ res(false); }
+    });
+  }
+};
+
+const store = {
+  warned:false,
+  async load(){
+    try{
+      if(window.storage && typeof window.storage.get === "function"){
+        const r = await window.storage.get(KEY);
+        if(r && r.value) return JSON.parse(r.value);
+      }
+    }catch(e){}
+    try{
+      const v = await idb.get(KEY);
+      if(v) return typeof v === "string" ? JSON.parse(v) : v;
+    }catch(e){}
+    try{
+      const v = localStorage.getItem(KEY);
+      if(v) return JSON.parse(v);
+    }catch(e){}
+    return null;
+  },
+  async save(){
+    const json = JSON.stringify(state);
+    let done = false;
+    try{
+      if(window.storage && typeof window.storage.set === "function"){
+        await window.storage.set(KEY, json); done = true;
+      }
+    }catch(e){}
+    if(!done) done = await idb.set(KEY, json);
+    if(!done){
+      try{ localStorage.setItem(KEY, json); done = true; }catch(e){}
+    }
+    if(!done && !this.warned){
+      this.warned = true;
+      toast("Il browser non salva i dati: usi «Salva archivio» per non perderli");
+    }
+    return done;
+  }
+};
+
+/* =========================================================================
+   3. PARSER FIT
+   ========================================================================= */
+const FIT_EPOCH = 631065600; // 1989-12-31T00:00:00Z, in secondi Unix
+const BT_SIZE  = [1,1,1,2,2,4,4,1,4,8,1,2,4,1,8,8,8];
+const BT_SIGN  = {1:1,3:1,5:1,14:1};
+const SWIM_STROKE = {0:"crawl",1:"dorso",2:"rana",3:"delfino",4:"misto",5:"misto",6:"misto"};
+
+function parseFIT(buf){
+  const dv = new DataView(buf);
+  if(buf.byteLength < 14) throw new Error("file troppo corto");
+  const hdrSize = dv.getUint8(0);
+  const dataSize = dv.getUint32(4, true);
+  const sig = String.fromCharCode(dv.getUint8(8),dv.getUint8(9),dv.getUint8(10),dv.getUint8(11));
+  if(sig !== ".FIT") throw new Error("non è un file FIT");
+
+  let pos = hdrSize;
+  const end = Math.min(hdrSize + dataSize, buf.byteLength);
+  const defs = {};
+  const out = {lengths:[], laps:[], records:[], sessions:[]};
+
+  while(pos < end){
+    const h = dv.getUint8(pos++); 
+    const compressed = (h & 0x80) !== 0;
+    if(!compressed && (h & 0x40)){                       // definizione
+      const local = h & 0x0F;
+      pos++;                                             // reserved
+      const arch = dv.getUint8(pos++); const le = arch === 0;
+      const gnum = dv.getUint16(pos, le); pos += 2;
+      const n = dv.getUint8(pos++);
+      const fields = [];
+      for(let i=0;i<n;i++){
+        fields.push({num:dv.getUint8(pos), size:dv.getUint8(pos+1), base:dv.getUint8(pos+2)&0x1F});
+        pos += 3;
+      }
+      let devTotal = 0;
+      if(h & 0x20){
+        const dn = dv.getUint8(pos++);
+        for(let i=0;i<dn;i++){ devTotal += dv.getUint8(pos+1); pos += 3; }
+      }
+      defs[local] = {gnum, fields, le, devTotal};
+    }else{                                               // dati
+      const local = compressed ? (h>>5)&0x03 : (h & 0x0F);
+      const d = defs[local];
+      if(!d) break;                                      // definizione mancante: stop pulito
+      const msg = {};
+      for(const f of d.fields){
+        msg[f.num] = readField(dv, pos, f, d.le);
+        pos += f.size;
+      }
+      pos += d.devTotal;
+      collect(out, d.gnum, msg);
+    }
+  }
+  return out;
+}
+
+function readField(dv, pos, f, le){
+  const bt = f.base, sz = BT_SIZE[bt] || 1;
+  if(bt === 7){                                          // stringa
+    let s = "";
+    for(let i=0;i<f.size;i++){ const c = dv.getUint8(pos+i); if(!c) break; s += String.fromCharCode(c); }
+    return s;
+  }
+  if(f.size !== sz) return null;                         // array: non serve qui
+  let v;
+  try{
+    if(sz===1) v = BT_SIGN[bt] ? dv.getInt8(pos) : dv.getUint8(pos);
+    else if(sz===2) v = BT_SIGN[bt] ? dv.getInt16(pos,le) : dv.getUint16(pos,le);
+    else if(sz===4) v = (bt===8) ? dv.getFloat32(pos,le) : (BT_SIGN[bt] ? dv.getInt32(pos,le) : dv.getUint32(pos,le));
+    else if(sz===8) v = (bt===9) ? dv.getFloat64(pos,le) : Number(dv.getBigUint64(pos,le));
+    else return null;
+  }catch(e){ return null; }
+  const inval = {1:0x7F,2:0xFF,3:0x7FFF,4:0xFFFF,5:0x7FFFFFFF,6:0xFFFFFFFF,0:0xFF,10:0,11:0,12:0,13:0xFF};
+  if(bt in inval && v === inval[bt]) return null;
+  if(typeof v === "number" && !isFinite(v)) return null;
+  return v;
+}
+
+function collect(out, gnum, m){
+  if(gnum === 101){                                      // length
+    const t = (m[4] ?? m[3]);                            // total_timer_time / total_elapsed_time (x1000)
+    out.lengths.push({
+      start: m[2], ts: m[253],
+      seconds: t != null ? t/1000 : null,
+      strokes: m[5],
+      stroke: SWIM_STROKE[m[7]] || null,
+      active: m[12] == null ? true : m[12] === 1
+    });
+  }else if(gnum === 19){                                 // lap
+    out.laps.push({
+      start:m[2], seconds:(m[8] ?? m[7]) != null ? (m[8] ?? m[7])/1000 : null,
+      meters:m[9] != null ? m[9]/100 : null,
+      hr:m[15], hrMax:m[16], nLengths:m[32]
+    });
+  }else if(gnum === 20){                                 // record
+    if(m[253] != null && m[3] != null) out.records.push({ts:m[253], hr:m[3]});
+  }else if(gnum === 18){                                 // session
+    out.sessions.push({
+      start:m[2], sport:m[5],
+      seconds:(m[8] ?? m[7]) != null ? (m[8] ?? m[7])/1000 : null,
+      meters:m[9] != null ? m[9]/100 : null,
+      hr:m[16], hrMax:m[17], pool:m[44] != null ? m[44]/100 : null
+    });
+  }
+}
+
+function fitToSession(out, fileName, poolDefault){
+  const s0 = out.sessions[0] || {};
+  const poolLen = (s0.pool && s0.pool > 5 && s0.pool < 100) ? Math.round(s0.pool) : poolDefault;
+  const t0 = s0.start ?? (out.laps[0] && out.laps[0].start) ?? (out.records[0] && out.records[0].ts);
+  if(t0 == null) throw new Error("nessun timestamp utilizzabile");
+  const date = new Date((t0 + FIT_EPOCH) * 1000);
+
+  // indice FC per timestamp
+  const recs = out.records.slice().sort((a,b)=>a.ts-b.ts);
+  const hrAt = (from, to) => {
+    if(!recs.length) return null;
+    let sum=0, n=0;
+    for(const r of recs){ if(r.ts>=from && r.ts<=to){ sum+=r.hr; n++; } if(r.ts>to) break; }
+    return n ? Math.round(sum/n) : null;
+  };
+
+  const segments = [];
+  const active = out.lengths.filter(l => l.active && l.seconds > 0);
+  if(active.length){
+    for(const l of active){
+      const st = l.start ?? (l.ts != null && l.seconds != null ? l.ts - l.seconds : null);
+      segments.push({
+        stroke: l.stroke || "misto",
+        meters: poolLen,
+        seconds: Math.round(l.seconds),
+        hr: (st != null && l.ts != null) ? hrAt(st, l.ts) : null
+      });
+    }
+  }else if(out.laps.length){
+    for(const lp of out.laps){
+      if(!lp.seconds || !lp.meters) continue;
+      segments.push({stroke:"misto", meters:Math.round(lp.meters), seconds:Math.round(lp.seconds), hr:lp.hr ?? null});
+    }
+  }else if(s0.seconds && s0.meters){
+    segments.push({stroke:"misto", meters:Math.round(s0.meters), seconds:Math.round(s0.seconds), hr:s0.hr ?? null});
+  }
+  if(!segments.length) throw new Error("nessuna vasca o frazione trovata");
+
+  // FC di sessione per i segmenti senza dato
+  const fallbackHR = s0.hr ?? null;
+  segments.forEach(s => { if(s.hr == null) s.hr = fallbackHR; });
+
+  return {
+    id: uid(), date: date.toISOString(), source: "FIT",
+    name: fileName.replace(/\.[^.]+$/,""), pool: poolLen, segments
+  };
+}
+
+/* =========================================================================
+   4. PARSER CSV / TCX
+   ========================================================================= */
+function splitCSV(text){
+  const delim = (text.split("\n")[0].match(/;/g)||[]).length > (text.split("\n")[0].match(/,/g)||[]).length ? ";" : ",";
+  const rows = []; let row = [], cell = "", q = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(q){ if(c === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; } else cell += c; }
+    else if(c === '"') q = true;
+    else if(c === delim){ row.push(cell); cell = ""; }
+    else if(c === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+    else if(c !== "\r") cell += c;
+  }
+  if(cell || row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ""));
+}
+const norm = s => (s||"").toLowerCase().replace(/[àáâ]/g,"a").replace(/[èé]/g,"e").replace(/[ìí]/g,"i")
+                 .replace(/[òó]/g,"o").replace(/[ùú]/g,"u").replace(/[^a-z0-9]/g,"");
+function findCol(head, cands){
+  for(const c of cands){ const i = head.findIndex(h => norm(h) === norm(c)); if(i >= 0) return i; }
+  for(const c of cands){ const i = head.findIndex(h => norm(h).includes(norm(c))); if(i >= 0) return i; }
+  return -1;
+}
+function toSeconds(v){
+  if(!v) return null;
+  v = String(v).trim().replace(",",".");
+  if(/^\d+(\.\d+)?$/.test(v)) return parseFloat(v) > 600 ? parseFloat(v) : parseFloat(v)*60;
+  const p = v.split(":").map(Number);
+  if(p.some(isNaN)) return null;
+  if(p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
+  if(p.length === 2) return p[0]*60 + p[1];
+  return null;
+}
+function toMeters(v){
+  if(v == null || v === "") return null;
+  let s = String(v).trim().replace(/\s/g,"");
+  const km = /km/i.test(s);
+  s = s.replace(/[^\d.,]/g,"");
+  if(s.includes(","))            s = s.replace(/\./g,"").replace(",",".");   // 1.234,5 -> 1234.5
+  else if(/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g,"");            // 2.000 -> 2000
+  const n = parseFloat(s);
+  if(isNaN(n) || n <= 0) return null;
+  return (km || n < 30) ? Math.round(n*1000) : Math.round(n);                // <30 = chilometri
+}
+function strokeFrom(v){
+  const n = norm(v);
+  if(!n) return null;
+  if(n.includes("liber") || n.includes("free") || n.includes("crawl") || n.includes("stilelibero")) return "crawl";
+  if(n.includes("dorso") || n.includes("back")) return "dorso";
+  if(n.includes("rana") || n.includes("breast")) return "rana";
+  if(n.includes("delfin") || n.includes("farfall") || n.includes("butter") || n.includes("fly")) return "delfino";
+  if(n.includes("mist") || n.includes("individual") || n.includes("im")) return "misto";
+  return null;
+}
+function parseDate(v){
+  if(!v) return null;
+  let s = String(v).trim();
+  let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})(.*)$/);   // gg/mm/aaaa
+  if(m){
+    const yr = m[3].length === 2 ? 2000 + +m[3] : +m[3];
+    const t = (m[4]||"").match(/(\d{1,2}):(\d{2})/);
+    return new Date(yr, +m[2]-1, +m[1], t ? +t[1] : 12, t ? +t[2] : 0);
+  }
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function csvToSessions(text, fileName, poolDefault){
+  const rows = splitCSV(text);
+  if(rows.length < 2) throw new Error("CSV vuoto");
+  const head = rows[0];
+  const ci = {
+    date:   findCol(head, ["Data","Date","Ora di inizio","Start Time"]),
+    dist:   findCol(head, ["Distanza","Distance"]),
+    time:   findCol(head, ["Tempo","Time","Durata","Duration","Tempo trascorso","Elapsed Time"]),
+    hr:     findCol(head, ["Frequenza cardiaca media","FC media","Avg HR","Average Heart Rate","FC med."]),
+    hrmax:  findCol(head, ["Frequenza cardiaca massima","FC max","Max HR","Max Heart Rate"]),
+    stroke: findCol(head, ["Stile","Tipo di bracciata","Stroke","Swim Stroke","Stile di nuoto"]),
+    type:   findCol(head, ["Tipo attività","Tipo di attività","Activity Type"]),
+    title:  findCol(head, ["Titolo","Title"])
+  };
+  if(ci.dist < 0 || ci.time < 0) throw new Error("colonne Distanza/Tempo non riconosciute");
+
+  const perDate = {};
+  for(const r of rows.slice(1)){
+    if(ci.type >= 0){
+      const t = norm(r[ci.type]);
+      if(t && !(t.includes("nuot") || t.includes("swim") || t.includes("piscina") || t.includes("pool"))) continue;
+    }
+    const meters = toMeters(r[ci.dist]);
+    const seconds = toSeconds(r[ci.time]);
+    if(!meters || !seconds) continue;
+    const d = ci.date >= 0 ? parseDate(r[ci.date]) : null;
+    const key = d ? d.toISOString().slice(0,10) : "senza-data";
+    const date = d || new Date();
+    if(!perDate[key]) perDate[key] = {
+      id: uid(), date: date.toISOString(), source: "CSV",
+      name: (ci.title >= 0 && r[ci.title]) ? r[ci.title] : fileName.replace(/\.[^.]+$/,""),
+      pool: poolDefault, segments: []
+    };
+    perDate[key].segments.push({
+      stroke: (ci.stroke >= 0 ? strokeFrom(r[ci.stroke]) : null) || "misto",
+      meters, seconds: Math.round(seconds),
+      hr: ci.hr >= 0 ? (parseInt(r[ci.hr],10) || null) : null
+    });
+  }
+  const list = Object.values(perDate);
+  if(!list.length) throw new Error("nessuna riga di nuoto valida");
+  return list;
+}
+
+function tcxToSession(text, fileName, poolDefault){
+  const doc = new DOMParser().parseFromString(text, "text/xml");
+  const laps = [...doc.getElementsByTagName("Lap")];
+  if(!laps.length) throw new Error("nessun Lap nel TCX");
+  const t0 = laps[0].getAttribute("StartTime");
+  const segments = [];
+  for(const lp of laps){
+    const g = t => { const e = lp.getElementsByTagName(t)[0]; return e ? parseFloat(e.textContent) : null; };
+    const sec = g("TotalTimeSeconds"), met = g("DistanceMeters");
+    let hr = null;
+    const hrEl = lp.getElementsByTagName("AverageHeartRateBpm")[0];
+    if(hrEl){ const v = hrEl.getElementsByTagName("Value")[0]; if(v) hr = parseInt(v.textContent,10); }
+    if(sec && met) segments.push({stroke:"misto", meters:Math.round(met), seconds:Math.round(sec), hr});
+  }
+  if(!segments.length) throw new Error("TCX senza distanze");
+  return {id:uid(), date:new Date(t0 || Date.now()).toISOString(), source:"TCX",
+          name:fileName.replace(/\.[^.]+$/,""), pool:poolDefault, segments};
+}
+
+/* =========================================================================
+   4b. SINCRONIZZAZIONE intervals.icu
+   -------------------------------------------------------------------------
+   Garmin non espone API personali. intervals.icu sì: si collega a Garmin
+   Connect (sincronizzazione ufficiale, automatica) e offre una chiave API
+   personale con endpoint /api/v1/ abilitati al CORS, quindi chiamabili
+   direttamente da questa pagina.
+     GET /api/v1/athlete/0/activities?oldest=&newest=   elenco
+     GET /api/v1/activity/{id}/file                     file originale (gzip)
+   ========================================================================= */
+const ICU = "https://intervals.icu/api/v1";
+const icuAuth = () => "Basic " + btoa("API_KEY:" + state.icuKey);
+
+async function icuGet(path, asBuffer){
+  let r;
+  try{
+    r = await fetch(ICU + path, {headers:{Authorization: icuAuth()}});
+  }catch(e){                                                  // rete o CORS
+    throw new Error(location.protocol === "file:"
+      ? "il browser blocca le chiamate di rete quando la pagina è aperta come file locale. Metta il file su un indirizzo web (anche GitHub Pages) e riprovi da lì."
+      : "non raggiungo intervals.icu — controlli la connessione");
+  }
+  if(r.status === 401 || r.status === 403) throw new Error("chiave non valida o scaduta");
+  if(!r.ok) throw new Error("intervals.icu ha risposto " + r.status);
+  return asBuffer ? r.arrayBuffer() : r.json();
+}
+
+async function gunzip(buf){
+  const u = new Uint8Array(buf);
+  if(!(u[0] === 0x1f && u[1] === 0x8b)) return buf;          // non compresso
+  if(typeof DecompressionStream === "undefined") throw new Error("browser senza supporto gzip");
+  const stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Response(stream).arrayBuffer();
+}
+
+async function icuConnect(key){
+  state.icuKey = key.trim();
+  const me = await icuGet("/athlete/0/profile").catch(async () => icuGet("/athlete/0"));
+  state.icuName = (me && (me.athlete ? me.athlete.name : me.name)) || "";
+  await store.save();
+  return state.icuName;
+}
+
+let icuAbort = false, icuBusy = false;
+
+// scarica un elenco di attività già filtrate; restituisce {ok, partial, skipped}
+async function icuImport(todo, label){
+  let ok = 0, partial = 0, skipped = 0;
+  for(let i = 0; i < todo.length; i++){
+    if(icuAbort) break;
+    const a = todo[i];
+    setSyncStatus(`${label} — ${i+1} di ${todo.length}…`, (i+1)/todo.length);
+    let sess = null;
+    if((a.file_type||"").toLowerCase() === "fit"){
+      try{
+        const raw = await gunzip(await icuGet(`/activity/${a.id}/file`, true));
+        sess = fitToSession(parseFIT(raw), a.name || "Nuoto", state.athlete.pool);
+      }catch(e){ sess = null; }
+    }
+    if(!sess){                                              // niente .fit: uso il riepilogo
+      const m = Math.round(a.distance || 0), t = Math.round(a.moving_time || a.elapsed_time || 0);
+      if(!m || !t){ skipped++; continue; }
+      sess = {id:uid(), date:new Date(a.start_date_local || a.start_date).toISOString(),
+              pool:state.athlete.pool, name:a.name || "Nuoto",
+              segments:[{stroke:"misto", meters:m, seconds:t, hr:a.average_heartrate ? Math.round(a.average_heartrate) : null}]};
+      partial++;
+    }else ok++;
+    sess.source = "intervals.icu";
+    sess.icuId = a.id;
+    if(a.name) sess.name = a.name;
+    if(a.start_date_local) sess.date = new Date(a.start_date_local).toISOString();
+    state.sessions.push(sess);
+    if((i+1) % 10 === 0){ await store.save(); render(); }    // salvataggi intermedi
+  }
+  return {ok, partial, skipped};
+}
+
+/* Archivio lungo: le sessioni di oltre un anno vengono raggruppate per stile e zona
+   di FC. Tutti i valori mostrati dall'app (metri, tempi, zone, carico, muscoli)
+   restano identici; si perde solo il dettaglio della singola vasca. */
+function compactSession(s){
+  if(s.compact || s.segments.length < 12) return false;
+  const buckets = {};
+  for(const g of s.segments){
+    const k = g.stroke + "|" + (zoneOf(g.hr) || 0);
+    if(!buckets[k]) buckets[k] = {stroke:g.stroke, meters:0, seconds:0, hrSum:0, hrN:0};
+    const B = buckets[k];
+    B.meters += g.meters; B.seconds += g.seconds;
+    if(g.hr){ B.hrSum += g.hr*g.seconds; B.hrN += g.seconds; }
+  }
+  s.segments = Object.values(buckets).map(B => ({
+    stroke:B.stroke, meters:B.meters, seconds:Math.round(B.seconds),
+    hr: B.hrN ? Math.round(B.hrSum/B.hrN) : null
+  }));
+  s.compact = true;
+  return true;
+}
+function compactOld(){
+  if(state.sessions.length < 150) return 0;
+  const cut = Date.now() - 365*86400000;
+  let n = 0;
+  for(const s of state.sessions)
+    if(new Date(s.date).getTime() < cut && compactSession(s)) n++;
+  return n;
+}
+
+const isSwim = a => /swim/i.test(a.type || "");
+const knownIds = () => new Set(state.sessions.map(s => s.icuId).filter(Boolean));
+
+async function icuList(oldest, newest){
+  return icuGet(`/athlete/0/activities?oldest=${oldest}&newest=${newest}`);
+}
+
+// aggiornamento incrementale: dall'ultima sincronizzazione a oggi
+async function icuSync(silent){
+  if(!state.icuKey || icuBusy) return;
+  icuAbort = false; icuBusy = true;
+  try{ await icuSyncRun(silent); }
+  finally{ icuBusy = false; setSyncStatus(document.getElementById("syncStatus").textContent, null); }
+}
+async function icuSyncRun(silent){
+  const days = parseInt(state.period, 10) || 365;
+  const oldest = new Date(Date.now() - Math.max(days, 30)*86400000).toISOString().slice(0,10);
+  const newest = new Date(Date.now() + 86400000).toISOString().slice(0,10);
+  setSyncStatus("Cerco allenamenti su intervals.icu…");
+
+  let list;
+  try{ list = await icuList(oldest, newest); }
+  catch(e){
+    setSyncStatus("Non sono riuscito a leggere: " + e.message);
+    if(!silent) toast("Sincronizzazione non riuscita: " + e.message);
+    return;
+  }
+
+  const swims = (list||[]).filter(isSwim);
+  const have = knownIds();
+  const todo = swims.filter(a => !have.has(a.id));
+  if(!todo.length){
+    setSyncStatus(`Aggiornato — ${swims.length} nuotate nel periodo, nessuna nuova.`);
+    state.icuLast = new Date().toISOString(); await store.save(); renderSync(); return;
+  }
+
+  const r = await icuImport(todo, "Scarico");
+  state.icuLast = new Date().toISOString();
+  await store.save(); render(); renderSync();
+  const msg = `${r.ok+r.partial} nuove sessioni` + (r.partial ? ` (${r.partial} senza dettaglio per stile)` : "");
+  setSyncStatus("Ultimo aggiornamento: adesso. " + msg + ".");
+  toast(msg);
+}
+
+// recupero storico: risale anno per anno finché trova nuotate
+async function icuBackfill(){
+  if(!state.icuKey || icuBusy) return;
+  icuAbort = false; icuBusy = true;
+  try{ await icuBackfillRun(); } finally { icuBusy = false; }
+}
+async function icuBackfillRun(){
+  const have = knownIds();
+  const thisYear = new Date().getFullYear();
+  let year = thisYear, vuoti = 0, tot = {ok:0, partial:0}, anni = [];
+
+  while(vuoti < 2 && year > 2007 && !icuAbort){
+    setSyncStatus(`Cerco nel ${year}…`);
+    let list;
+    try{ list = await icuList(year + "-01-01", year + "-12-31"); }
+    catch(e){ setSyncStatus("Interrotto: " + e.message); toast("Recupero interrotto: " + e.message); break; }
+
+    const swims = (list||[]).filter(isSwim);
+    if(!swims.length){ vuoti++; year--; continue; }
+    vuoti = 0;
+    anni.push(year);
+    const todo = swims.filter(a => !have.has(a.id));
+    if(todo.length){
+      const r = await icuImport(todo, `Anno ${year}`);
+      tot.ok += r.ok; tot.partial += r.partial;
+      todo.forEach(a => have.add(a.id));
+    }
+    year--;
+  }
+
+  state.icuLast = new Date().toISOString();
+  state.icuBackfill = new Date().toISOString();
+  compactOld();
+  await store.save(); render(); renderSync();
+  const n = tot.ok + tot.partial;
+  const span = anni.length ? ` (dal ${Math.min(...anni)} a oggi)` : "";
+  setSyncStatus(icuAbort ? `Recupero interrotto — ${n} sessioni salvate.`
+    : (n ? `Storico completo${span}: ${n} sessioni recuperate` + (tot.partial ? `, di cui ${tot.partial} senza dettaglio per stile.` : ".")
+         : `Storico già completo${span} — nessuna sessione nuova.`));
+  toast(n ? n + " sessioni dallo storico" : "Storico già completo");
+}
+
+/* =========================================================================
+   5. CALCOLI
+   ========================================================================= */
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+
+function zoneOf(hr){
+  const {hrMax} = state.athlete;
+  if(!hr) return null;
+  const p = hr / hrMax;
+  if(p < 0.60) return 1;
+  if(p < 0.70) return 2;
+  if(p < 0.80) return 3;
+  if(p < 0.90) return 4;
+  return 5;
+}
+/* Calorie — metodo MET (Compendium of Physical Activities, Ainsworth 2011,
+   categoria 18 "water activities"). Per ogni stile due ancore, sforzo leggero
+   e sforzo vigoroso; l'intensità effettiva viene dalla zona di FC registrata.
+     crawl     18240  5.8  →  18230  9.8
+     dorso     18255  4.8  →  18250  9.5
+     rana      18265  5.3  →  18260 10.3
+     delfino   ancora bassa derivata (vedi sotto) → 18270 13.8
+     misto     18310  6.0  →  media delle quattro ancore alte
+   Il Compendium non ha una voce "delfino ricreativo": l'ancora bassa è ottenuta
+   applicando al 13.8 il rapporto medio basso/alto degli altri tre stili (0,54).
+   kcal = MET × 3,5 × kg / 200 × minuti  (energia lorda, basale inclusa). */
+const MET = {
+  crawl:   [5.8,  9.8],
+  dorso:   [4.8,  9.5],
+  rana:    [5.3, 10.3],
+  delfino: [7.4, 13.8],
+  misto:   [6.0, 10.9]
+};
+function metFor(stroke, zone){
+  const a = MET[stroke] || MET.misto;
+  const t = Math.min(1, Math.max(0, ((zone || 3) - 1) / 4));
+  return a[0] + (a[1] - a[0]) * t;
+}
+function kcalFor(stroke, zone, seconds){
+  return metFor(stroke, zone) * 3.5 * (state.athlete.kg || 75) / 200 * (seconds / 60);
+}
+
+const ZONES = [
+  {z:1, name:"Z1 recupero",   color:"#2E6E7E"},
+  {z:2, name:"Z2 fondo",      color:"#2ED3B7"},
+  {z:3, name:"Z3 medio",      color:"#7FD46B"},
+  {z:4, name:"Z4 soglia",     color:"#F5A623"},
+  {z:5, name:"Z5 massimale",  color:"#FF5F6D"}
+];
+
+/* =========================================================================
+   6. FIGURA ANATOMICA (stessa geometria del PDF)
+   ========================================================================= */
+const BASE_SHAPE = {
+  torso:[[50,214],[60,210],[67,200],[66,168],[62,150],[50,150]],
+  braccio:[[63,208],[72,200],[80,156],[73,150],[68,158],[66,182],[60,198]],
+  gamba:[[50,150],[63,150],[66,130],[62,90],[60,46],[52,44],[52,88],[50,110]]
+};
+const FRONT = {
+  deltoide:[[60,206],[68,204],[71,195],[66,189],[60,193]],
+  pettorale:[[50,209],[60,207],[66,199],[64,189],[52,184],[50,184]],
+  bicipite:[[66,189],[72,192],[75,177],[70,169],[65,171]],
+  avambraccio:[[70,169],[75,176],[80,157],[75,150],[69,152]],
+  addome:[[43,183],[57,183],[58,152],[42,152]],
+  obliquo:[[57,183],[64,187],[66,166],[60,152],[58,152]],
+  ileopsoas:[[50,152],[61,152],[63,142],[50,140]],
+  quadricipite:[[51,141],[64,140],[65,112],[59,87],[51,89]],
+  adduttore:[[50,139],[55,139],[55,104],[50,100]],
+  tibiale:[[52,85],[60,85],[60,52],[54,50]]
+};
+const BACK = {
+  trapezio:[[50,216],[61,211],[67,200],[58,195],[50,195]],
+  deltoide:[[60,206],[68,204],[71,195],[66,189],[60,193]],
+  dorsale:[[50,195],[58,196],[66,191],[64,168],[52,154],[50,154]],
+  tricipite:[[65,189],[72,191],[75,177],[70,169],[64,171]],
+  avambraccio:[[70,169],[75,176],[80,157],[75,150],[69,152]],
+  erettori:[[50,170],[58,166],[59,150],[50,150]],
+  gluteo:[[50,150],[62,150],[65,133],[58,124],[50,126]],
+  ischiocrurali:[[51,126],[63,131],[63,104],[56,88],[51,90]],
+  polpaccio:[[52,85],[61,85],[61,58],[54,52]]
+};
+const pts = p => p.map(([x,y]) => x + "," + (240-y)).join(" ");
+const mir = p => p.map(([x,y]) => [100-x, y]);
+
+function mixColor(hex, t){                                // #1C4C5C -> hex, secondo t 0..1
+  const base = [28,76,92], to = hexRGB(hex);
+  const r = base.map((c,i) => Math.round(c + (to[i]-c)*t));
+  return "rgb(" + r.join(",") + ")";
+}
+const hexRGB = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
+
+function drawBody(view, intens){
+  const groups = view === "front" ? FRONT : BACK;
+  let s = `<svg viewBox="0 -2 100 202" role="img" aria-label="Mappa del carico, vista ${view==="front"?"anteriore":"posteriore"}">`;
+  for(const p of Object.values(BASE_SHAPE)){
+    for(const q of [p, mir(p)]) s += `<polygon class="m" points="${pts(q)}" fill="#143845"/>`;
+  }
+  s += `<circle class="m" cx="50" cy="${240-228}" r="11" fill="#143845"/>`;
+  s += `<rect class="m" x="45" y="${240-219}" width="10" height="9" fill="#143845"/>`;
+  for(const [k, p] of Object.entries(groups)){
+    const t = intens[k] ?? 0;
+    const col = t > 0 ? mixColor("#2ED3B7", 0.15 + t*0.85) : "#143845";
+    for(const q of [p, mir(p)]) s += `<polygon class="m" points="${pts(q)}" fill="${col}"><title>${k} — ${Math.round(t*100)}%</title></polygon>`;
+  }
+  return s + "</svg>";
+}
+
+
+
+/* ---- aggregazione mensile: sempre su tutto lo storico, non sul periodo scelto ---- */
+function monthly(){
+  const map = {};
+  const days = parseInt(state.period, 10);
+  const cut = days ? Date.now() - days*86400000 : 0;
+  for(const s of state.sessions){
+    if(cut && new Date(s.date).getTime() < cut) continue;
+    const d = new Date(s.date);
+    const k = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+    if(!map[k]){
+      map[k] = {key:k, meters:0, seconds:0, load:0, kcal:0, sessions:new Set(), hrSum:0, hrN:0,
+                aer:0, sog:0, ana:0, strokes:{}, muscles:{}};
+      Object.keys(MUSCLES).forEach(m => map[k].muscles[m] = 0);
+    }
+    const M = map[k];
+    M.sessions.add(s.id);
+    for(const g of s.segments){
+      const st = STROKES[g.stroke] ? g.stroke : "misto";
+      const z = zoneOf(g.hr), min = g.seconds/60, l = min * (z || 2);
+      M.meters += g.meters; M.seconds += g.seconds; M.load += l;
+      M.kcal += kcalFor(st, z, g.seconds);
+      M.strokes[st] = (M.strokes[st]||0) + g.meters;
+      if(g.hr){ M.hrSum += g.hr*g.seconds; M.hrN += g.seconds; }
+      if(z === 4) M.sog += g.seconds; else if(z === 5) M.ana += g.seconds; else if(z) M.aer += g.seconds;
+      for(const [name, coef] of Object.entries(MUSCLES)) M.muscles[name] += l * coefFor(coef, st);
+    }
+  }
+  return Object.values(map).sort((a,b) => a.key.localeCompare(b.key)).map(M => {
+    const zTot = M.aer + M.sog + M.ana;
+    const topStroke = Object.entries(M.strokes).sort((a,b) => b[1]-a[1])[0];
+    const topMuscle = Object.entries(M.muscles).sort((a,b) => b[1]-a[1])[0];
+    return Object.assign(M, {
+      n: M.sessions.size,
+      avgHR: M.hrN ? Math.round(M.hrSum/M.hrN) : null,
+      aerPct: zTot ? Math.round(M.aer/zTot*100) : null,
+      topStroke: topStroke ? topStroke[0] : null,
+      topStrokePct: topStroke && M.meters ? Math.round(topStroke[1]/M.meters*100) : 0,
+      topMuscle: topMuscle ? topMuscle[0] : null
+    });
+  });
+}
+
+const monthLabel = k => {
+  const [y,m] = k.split("-");
+  return new Date(+y, +m-1, 1).toLocaleDateString("it-IT",{month:"short",year:"2-digit"});
+};
+
+
+/* =========================================================================
+   7. RENDER — interfaccia mobile
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const fmtM = m => m >= 1000 ? (m/1000).toFixed(m >= 10000 ? 1 : 2).replace(".",",") + " km" : Math.round(m) + " m";
+const fmtT = s => {
+  if(s < 60) return Math.round(s) + " s";
+  let m = Math.round(s/60); const h = Math.floor(m/60); m = m % 60;
+  return h ? h + "h " + String(m).padStart(2,"0") : m + " min";
+};
+const fmtPace = (m, s) => { if(!m || !s) return "—";
+  const p = s/(m/100); return Math.floor(p/60) + ":" + String(Math.round(p%60)).padStart(2,"0"); };
+const stColor = k => (STROKES[k] || STROKES.misto).color;
+const stName  = k => (STROKES[k] || STROKES.misto).label;
+
+function relDay(iso){
+  const d = new Date(iso), now = new Date();
+  const d0 = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const n0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const g = Math.round((n0 - d0)/86400000);
+  if(g === 0) return "Oggi";
+  if(g === 1) return "Ieri";
+  if(g < 7) return d.toLocaleDateString("it-IT",{weekday:"long"});
+  return d.toLocaleDateString("it-IT",{weekday:"short",day:"numeric",month:"long"});
+}
+
+function toast(msg){
+  const t = $("toast"); t.innerHTML = msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("on"), 3600);
+}
+
+/* ---------------- analisi di una singola sessione ---------------- */
+function sessionStats(s){
+  const byStroke = {}, byZone = {}, byMuscle = {}, zoneByStroke = {};
+  let meters = 0, seconds = 0, load = 0, hrSum = 0, hrN = 0, noHR = 0, kcal = 0;
+  ZONES.forEach(z => byZone[z.z] = 0);
+  Object.keys(MUSCLES).forEach(m => byMuscle[m] = 0);
+
+  for(const g of s.segments){
+    const st = STROKES[g.stroke] ? g.stroke : "misto";
+    const z = zoneOf(g.hr), min = g.seconds/60, l = min * (z || 2);
+    if(!byStroke[st]) byStroke[st] = {meters:0, seconds:0, load:0, hrSum:0, hrN:0, kcal:0};
+    if(!zoneByStroke[st]){ zoneByStroke[st] = {}; ZONES.forEach(x => zoneByStroke[st][x.z] = 0); }
+    const B = byStroke[st];
+    const kc = kcalFor(st, z, g.seconds);
+    B.meters += g.meters; B.seconds += g.seconds; B.load += l; B.kcal += kc;
+    meters += g.meters; seconds += g.seconds; load += l; kcal += kc;
+    if(g.hr){ B.hrSum += g.hr*g.seconds; B.hrN += g.seconds; hrSum += g.hr*g.seconds; hrN += g.seconds; }
+    if(z){ byZone[z] += g.seconds; zoneByStroke[st][z] += g.seconds; } else noHR += g.seconds;
+    for(const [name, coef] of Object.entries(MUSCLES)) byMuscle[name] += l * coefFor(coef, st);
+  }
+  Object.values(byStroke).forEach(B => B.hr = B.hrN ? Math.round(B.hrSum/B.hrN) : null);
+  const aer = byZone[1] + byZone[2] + byZone[3];
+  return {meters, seconds, load, kcal, byStroke, byZone, byMuscle, zoneByStroke, noHR,
+          avgHR: hrN ? Math.round(hrSum/hrN) : null,
+          aer, sog: byZone[4], ana: byZone[5]};
+}
+
+/* ---------------- correzione degli stili vasca per vasca ----------------
+   L'orologio classifica ogni vasca dall'accelerometro del polso e sbaglia
+   spesso su rana/delfino, sulle esercitazioni e sulle vasche lente. Qui le
+   vasche vengono raggruppate in blocchi contigui dello stesso stile, che è
+   il modo in cui l'allenamento è davvero strutturato. */
+
+function groupsOf(s, size){
+  const out = [];
+  for(let from = 0; from < s.segments.length; from += size){
+    const to = Math.min(from + size - 1, s.segments.length - 1);
+    const g = {from, to, n:to-from+1, meters:0, seconds:0, strokes:{}};
+    for(let i = from; i <= to; i++){
+      const seg = s.segments[i];
+      g.meters += seg.meters; g.seconds += seg.seconds;
+      g.strokes[seg.stroke] = (g.strokes[seg.stroke]||0) + 1;
+    }
+    const top = Object.entries(g.strokes).sort((a,b) => b[1]-a[1])[0];
+    g.stroke = top[0];                       // stile prevalente nel gruppo
+    g.misto = Object.keys(g.strokes).length > 1;
+    out.push(g);
+  }
+  return out;
+}
+
+async function setStroke(s, from, to, stroke){
+  for(let i = from; i <= to; i++){
+    const g = s.segments[i];
+    if(g.orig === undefined) g.orig = g.stroke;      // conservo la lettura dell'orologio
+    g.stroke = stroke;
+  }
+  s.edited = true;
+  await store.save();
+  render();
+}
+
+async function resetStrokes(s){
+  s.segments.forEach(g => { if(g.orig !== undefined){ g.stroke = g.orig; delete g.orig; } });
+  delete s.edited;
+  await store.save();
+  render();
+}
+
+const editable = s => !s.compact && s.segments.length >= 4;
+
+/* ---------------- pannello "ultima nuotata" ---------------- */
+let swIdx = 0;                                   // 0 = più recente
+
+function sortedSessions(){
+  return state.sessions.slice().sort((a,b) => new Date(b.date) - new Date(a.date));
+}
+
+function renderLast(){
+  const list = sortedSessions();
+  if(!list.length){
+    $("swNav").hidden = true;
+    $("lastBody").innerHTML = `<section><p class="empty">
+      Nessuna nuotata in archivio.<br>Vada in <b>Impostazioni</b> e colleghi intervals.icu,<br>
+      oppure provi con i dati di esempio.</p></section>`;
+    return;
+  }
+  swIdx = Math.min(Math.max(swIdx, 0), list.length - 1);
+  const s = list[swIdx], a = sessionStats(s);
+
+  $("swNav").hidden = list.length < 2;
+  $("swPrev").disabled = swIdx >= list.length - 1;   // "‹" = più vecchia
+  $("swNext").disabled = swIdx <= 0;
+  $("swPos").textContent = swIdx === 0 ? "ultima nuotata"
+    : `${swIdx + 1}ª a ritroso · ${list.length} in archivio`;
+
+  const strokes = Object.entries(a.byStroke).sort((x,y) => y[1].meters - x[1].meters);
+  const unknown = (a.byStroke.misto ? a.byStroke.misto.meters : 0) / (a.meters || 1);
+  const maxM = Math.max(1, ...strokes.map(e => e[1].meters));
+  const zTot = ZONES.reduce((t,z) => t + a.byZone[z.z], 0);
+
+  let h = "";
+
+  /* vetrina */
+  h += `<div class="hero">
+    <div class="when">${relDay(s.date)} · ${new Date(s.date).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</div>
+    <p class="big num">${fmtM(a.meters).replace(/ (km|m)$/, ' <small>$1</small>')}</p>
+    <p class="sub num">${fmtT(a.seconds)} · ${fmtPace(a.meters, a.seconds)} ogni 100 m</p>
+    <div class="chips">
+      <div class="chip">Calorie<b class="num">${Math.round(a.kcal)}</b></div>
+      <div class="chip">FC media<b class="num">${a.avgHR || "—"}</b></div>
+      <div class="chip">Carico<b class="num">${Math.round(a.load)}</b></div>
+      <div class="chip">Aerobico<b class="num">${zTot ? Math.round(a.aer/zTot*100) + "%" : "—"}</b></div>
+    </div>
+  </div>`;
+
+  /* per stile */
+  h += `<section><h2>Tempi per stile</h2><div class="rows">`;
+  for(const [k, B] of strokes){
+    h += `<div class="rw">
+      <div class="top">
+        <span class="nm"><i style="background:${stColor(k)}"></i>${stName(k)}</span>
+        <span class="vl num">${fmtM(B.meters)} · ${fmtT(B.seconds)}</span>
+      </div>
+      <div class="track"><i style="width:${B.meters/maxM*100}%;background:${stColor(k)}"></i></div>
+      <div class="meta num">${fmtPace(B.meters, B.seconds)} ogni 100 m${B.hr ? " · FC " + B.hr + " bpm" : ""} · ${Math.round(B.kcal)} kcal</div>
+    </div>`;
+  }
+  h += `</div>`;
+  if(unknown){
+    h += `<p class="note">L'orologio non ha registrato gli stili per questa sessione (di solito perché
+          non arriva dal file originale). Se sa cos'era, può indicarlo:</p>
+      <select id="assign" style="margin-top:8px">
+        <option value="">assegna uno stile a tutta la sessione…</option>` +
+      Object.entries(STROKES).filter(([k]) => k !== "misto")
+        .map(([k,v]) => `<option value="${k}">${v.label}</option>`).join("") +
+      `</select>`;
+  }
+  h += `</section>`;
+
+  /* frequenza cardiaca */
+  h += `<section><h2>Frequenza cardiaca</h2>`;
+  if(zTot){
+    h += `<div class="stack">` +
+      ZONES.map(z => a.byZone[z.z] ? `<i style="width:${a.byZone[z.z]/zTot*100}%;background:${z.color}" title="${z.name}"></i>` : "").join("") +
+      `</div><div class="keys">` +
+      ZONES.filter(z => a.byZone[z.z]).map(z =>
+        `<span><i style="background:${z.color}"></i>${z.name.split(" ")[0]} ${fmtT(a.byZone[z.z])}</span>`).join("") +
+      `</div>`;
+    h += `<div class="rows" style="margin-top:18px">`;
+    h += `<div class="rw"><div class="top"><span class="nm">Aerobico · soglia · anaerobico</span></div>
+      <div class="track">
+        <i style="width:${a.aer/zTot*100}%;background:var(--aer)"></i>
+        <i style="width:${a.sog/zTot*100}%;background:var(--sog)"></i>
+        <i style="width:${a.ana/zTot*100}%;background:var(--ana)"></i>
+      </div>
+      <div class="meta num">${Math.round(a.aer/zTot*100)}% · ${Math.round(a.sog/zTot*100)}% · ${Math.round(a.ana/zTot*100)}%</div>
+    </div></div>`;
+    if(a.noHR) h += `<p class="note">${fmtT(a.noHR)} senza dato di frequenza cardiaca.</p>`;
+  }else{
+    h += `<p class="empty" style="padding:14px">Questa sessione non ha dati di frequenza cardiaca.</p>`;
+  }
+  h += `</section>`;
+
+  /* FC per stile */
+  const withZ = strokes.filter(([k]) => ZONES.some(z => (a.zoneByStroke[k]||{})[z.z]));
+  if(withZ.length > 1){
+    h += `<section><h2>Zone dentro ogni stile</h2><div class="rows">`;
+    for(const [k, B] of withZ){
+      const zs = a.zoneByStroke[k];
+      const tot = ZONES.reduce((t,z) => t + zs[z.z], 0);
+      const top = ZONES.slice().sort((x,y) => zs[y.z] - zs[x.z])[0];
+      h += `<div class="rw">
+        <div class="top">
+          <span class="nm"><i style="background:${stColor(k)}"></i>${stName(k)}</span>
+          <span class="vl num">${B.hr ? B.hr + " bpm" : "—"}</span>
+        </div>
+        <div class="track">` +
+        ZONES.map(z => zs[z.z] ? `<i style="width:${zs[z.z]/tot*100}%;background:${z.color}" title="${z.name} ${fmtT(zs[z.z])}"></i>` : "").join("") +
+        `</div>
+        <div class="meta">prevalenza ${top.name}</div>
+      </div>`;
+    }
+    h += `</div><p class="note">Serve a vedere se lo stile "facile" è davvero facile: rana o delfino spesso
+          stanno più in alto di quanto sembri.</p></section>`;
+  }
+
+  /* vasche: assegnazione a gruppi fissi di 10 */
+  if(editable(s)){
+    const gr = groupsOf(s, 10);
+    h += `<section><h2>Stili, 10 vasche per volta</h2>
+      <div class="blocks">` + gr.map(g => `
+        <div class="blk">
+          <div class="bi">
+            <span class="bn">${g.from+1}–${g.to+1}${g.n < 10 ? ` <em style="font-style:normal;color:var(--faint);font-weight:400">(${g.n})</em>` : ""}</span>
+            <span class="bm num">${fmtM(g.meters)} · ${fmtT(g.seconds)}</span>
+          </div>
+          <select data-from="${g.from}" data-to="${g.to}" style="border-color:${stColor(g.stroke)}">` +
+            Object.entries(STROKES).map(([k,v]) =>
+              `<option value="${k}"${k === g.stroke ? " selected" : ""}>${v.label.split(" ")[0]}</option>`).join("") +
+          `</select>
+        </div>`).join("") + `</div>`;
+    if(gr.some(g => g.misto))
+      h += `<p class="note">Dove l'orologio ha letto stili diversi dentro lo stesso gruppo di 10,
+            la tendina mostra quello prevalente: la confermi o la cambi.</p>`;
+    if(s.edited) h += `<p class="note">Corretto a mano, salvato.
+      <button class="more" id="btnReset" style="width:auto;display:inline;padding:0 0 0 6px">Ripristina l'orologio</button></p>`;
+    h += `</section>`;
+  }
+
+  /* calorie */
+  const kmax = Math.max(1, ...strokes.map(e => e[1].kcal));
+  const netto = Math.round(a.kcal - (a.seconds/3600) * (state.athlete.kg || 75));
+  h += `<section><h2>Calorie</h2>
+    <p class="big num" style="font-size:34px;font-weight:700;margin:0 0 4px">${Math.round(a.kcal)} <small style="font-size:15px;color:var(--mut)">kcal</small></p>
+    <p class="note" style="margin:0 0 16px">${Math.round(a.kcal/(a.seconds/60))} kcal al minuto${a.meters ? " · " + (a.kcal/(a.meters/100)).toFixed(1) + " kcal ogni 100 m" : ""}</p>
+    <div class="rows">` +
+    strokes.map(([k, B]) => `<div class="rw">
+      <div class="top">
+        <span class="nm"><i style="background:${stColor(k)}"></i>${stName(k)}</span>
+        <span class="vl num">${Math.round(B.kcal)} kcal</span>
+      </div>
+      <div class="track"><i style="width:${B.kcal/kmax*100}%;background:${stColor(k)}"></i></div>
+      <div class="meta num">${(B.kcal/(B.seconds/60)).toFixed(1)} kcal/min${B.meters ? " · " + (B.kcal/(B.meters/100)).toFixed(1) + " ogni 100 m" : ""}</div>
+    </div>`).join("") +
+    `</div>
+    <p class="note">Stima con i valori MET del Compendium of Physical Activities (Ainsworth 2011),
+     scalati sull'intensità che risulta dalla sua frequenza cardiaca. È energia lorda: tolto il
+     metabolismo basale restano circa <b>${netto} kcal</b> di spesa aggiuntiva.
+     Peso usato: ${state.athlete.kg} kg.</p>
+    </section>`;
+
+  /* muscoli */
+  const mus = Object.entries(a.byMuscle).sort((x,y) => y[1]-x[1]);
+  const maxMus = Math.max(1, ...mus.map(e => e[1]));
+  const intens = {};
+  mus.forEach(([n,v]) => intens[MUSCLES[n].key] = v/maxMus);
+  h += `<section><h2>Muscoli sollecitati</h2>
+    <div class="bodywrap">
+      <figure>${drawBody("front", intens)}<figcaption>Anteriore</figcaption></figure>
+      <figure>${drawBody("back", intens)}<figcaption>Posteriore</figcaption></figure>
+    </div>
+    <div class="mus" id="musList">` +
+    mus.map(([n,v], i) => `<div class="r" data-i="${i}"${i >= 6 ? ' hidden' : ''}>
+        <span>${n}</span>
+        <span class="bar"><i style="width:${v/maxMus*100}%;background:${MUSCLE_COLOR[n]}"></i></span>
+        <em class="num">${Math.round(v/maxMus*100)}%</em>
+      </div>`).join("") +
+    `</div><button class="more" id="btnMore">Mostra tutti i ${mus.length} gruppi</button>
+    <p class="note">Percentuale rispetto al gruppo più caricato di questa sessione.` +
+      (unknown > 0.3 ? ` Attenzione: ${Math.round(unknown*100)}% della distanza è senza stile riconosciuto,
+       quindi questa parte è stimata come media dei quattro stili.` : ``) + `</p>
+    </section>`;
+
+  $("lastBody").innerHTML = h;
+
+  $("lastBody").querySelectorAll(".blk select").forEach(sel => {
+    sel.addEventListener("change", async () => {
+      await setStroke(s, +sel.dataset.from, +sel.dataset.to, sel.value);
+      toast("Vasche " + (+sel.dataset.from + 1) + "–" + (+sel.dataset.to + 1) + " aggiornate");
+    });
+  });
+
+  const br = $("btnReset");
+  if(br) br.addEventListener("click", async () => {
+    if(!confirm("Ripristina gli stili letti dall'orologio?")) return;
+    await resetStrokes(s); toast("Ripristinato");
+  });
+
+  const as = $("assign");
+  if(as) as.addEventListener("change", async () => {
+    if(!as.value) return;
+    s.segments.forEach(g => { if(g.stroke === "misto") g.stroke = as.value; });
+    await store.save(); render(); toast("Stile assegnato");
+  });
+
+  const btn = $("btnMore");
+  if(btn) btn.addEventListener("click", () => {
+    const hidden = $("musList").querySelector(".r[hidden]");
+    $("musList").querySelectorAll(".r").forEach(r => r.hidden = hidden ? false : +r.dataset.i >= 6);
+    btn.textContent = hidden ? "Mostra solo i principali" : `Mostra tutti i ${mus.length} gruppi`;
+  });
+}
+
+/* ---------------- pannello mesi ---------------- */
+function renderMonths(){
+  const all = monthly();
+  if(!all.length){
+    $("mChart").innerHTML = ""; $("mKeys").innerHTML = "";
+    $("mCards").innerHTML = `<section><p class="empty">Nessuna sessione in archivio.</p></section>`;
+    $("mNote").textContent = ""; return;
+  }
+  const show = all.slice(-12);
+  const max = Math.max(...show.map(m => m.meters));
+  show.forEach((m, i) => {
+    const lab = monthLabel(m.key);
+    m.tick = (i === 0 || m.key.slice(0,4) !== show[i-1].key.slice(0,4)) ? lab : lab.split(" ")[0];
+  });
+
+  $("mChart").innerHTML = show.map(m => {
+    const inner = Object.entries(m.strokes).sort((a,b) => a[1]-b[1])
+      .map(([st,v]) => `<i style="display:block;height:${v/m.meters*100}%;background:${stColor(st)}"></i>`).join("");
+    return `<div class="col" title="${monthLabel(m.key)} — ${fmtM(m.meters)}">
+      <b class="num">${(m.meters/1000).toFixed(0)}</b>
+      <div class="bx" style="height:${Math.max(3, m.meters/max*112)}px">${inner}</div>
+      <span>${m.tick}</span></div>`;
+  }).join("");
+
+  const used = {};
+  show.forEach(m => Object.keys(m.strokes).forEach(k => used[k] = 1));
+  $("mKeys").innerHTML = Object.keys(used).map(k =>
+    `<span><i style="background:${stColor(k)}"></i>${stName(k).split(" ")[0]}</span>`).join("");
+
+  const last = all[all.length-1], before = all.slice(0,-1);
+  let nota = "Chilometri per mese, colorati per stile.";
+  if(before.length >= 2){
+    const media = before.reduce((t,m) => t+m.meters, 0)/before.length;
+    const d = Math.round((last.meters - media)/media*100);
+    nota += ` A ${monthLabel(last.key)}: ${fmtM(last.meters)}, ` +
+      (Math.abs(d) < 8 ? "in linea con" : (d > 0 ? `il ${d}% sopra` : `il ${Math.abs(d)}% sotto`)) +
+      ` la media dei mesi precedenti (${fmtM(media)}).`;
+  }
+  const kTot = all.reduce((t,m) => t + m.kcal, 0);
+  nota += ` In tutto il periodo mostrato: ${Math.round(kTot).toLocaleString("it-IT")} kcal.`;
+  $("mNote").textContent = nota;
+
+  const rows = all.slice().reverse();
+  $("mCards").innerHTML = rows.map((m, i) => {
+    const prev = rows[i+1];
+    const d = prev && prev.meters ? Math.round((m.meters - prev.meters)/prev.meters*100) : null;
+    const dTxt = (d == null || d === 0) ? "" :
+      `<span class="delta" style="color:${d > 0 ? "var(--crawl)" : "var(--sog)"}">${d > 0 ? "+" : ""}${d}%</span>`;
+    const stroketot = m.meters || 1;
+    const bars = Object.entries(m.strokes).sort((a,b) => b[1]-a[1]).map(([st,v]) =>
+      `<i style="width:${v/stroketot*100}%;background:${stColor(st)}"></i>`).join("");
+    return `<div class="mcard">
+      <div class="hd"><b>${monthLabel(m.key)}</b><em>${m.n} ${m.n === 1 ? "seduta" : "sedute"} ${dTxt}</em></div>
+      <div class="stack" style="height:9px;border-radius:5px">${bars}</div>
+      <div class="grid4" style="margin-top:11px">
+        <div><b class="num">${fmtM(m.meters).replace(" km","").replace(" m","")}</b><small>${m.meters >= 1000 ? "km" : "metri"}</small></div>
+        <div><b class="num">${fmtT(m.seconds).replace(" min","'").replace("h ","h")}</b><small>in acqua</small></div>
+        <div><b class="num">${m.avgHR || "—"}</b><small>FC media</small></div>
+        <div><b class="num">${m.aerPct == null ? "—" : m.aerPct + "%"}</b><small>aerobico</small></div>
+        <div><b class="num">${Math.round(m.kcal).toLocaleString("it-IT")}</b><small>kcal</small></div>
+        <div><b class="num">${Math.round(m.load)}</b><small>carico</small></div>
+        <div><b class="num">${fmtPace(m.meters, m.seconds)}</b><small>passo</small></div>
+        <div><b class="num">${Math.round(m.kcal/m.n)}</b><small>kcal/seduta</small></div>
+      </div>
+      <p class="note" style="margin-top:10px">
+        Prevalenza <b style="color:${stColor(m.topStroke)}">${stName(m.topStroke).split(" ")[0].toLowerCase()}</b> ${m.topStrokePct}% ·
+        più sollecitato ${m.topMuscle ? m.topMuscle.toLowerCase() : "—"}
+      </p>
+    </div>`;
+  }).join("");
+}
+
+/* ---------------- impostazioni ---------------- */
+function renderStats(){
+  const n = state.sessions.length;
+  if(!n){ $("stats").textContent = ""; return; }
+  const tot = state.sessions.reduce((t,s) => t + s.segments.reduce((v,g) => v+g.meters, 0), 0);
+  const oldest = state.sessions.reduce((d,s) => Math.min(d, new Date(s.date).getTime()), Infinity);
+  $("stats").textContent = `${n} sessioni in archivio, ${fmtM(tot)} complessivi, ` +
+    `dal ${new Date(oldest).toLocaleDateString("it-IT",{month:"long",year:"numeric"})}.`;
+}
+
+function setSyncStatus(t, frac){
+  const el = $("syncStatus"); if(el) el.textContent = t;
+  const b = $("syncProg");
+  if(b){ b.hidden = (frac == null); if(frac != null) b.firstElementChild.style.width = Math.round(frac*100) + "%"; }
+  const hp = $("hdrProg");
+  if(hp) hp.style.width = frac == null ? "0%" : Math.round(frac*100) + "%";
+  const stop = $("btnStop"); if(stop) stop.hidden = (frac == null);
+  $("dot").className = "dot " + (frac != null ? "busy" : (state.icuKey ? "on" : ""));
+  $("btnRefresh").classList.toggle("spin", frac != null);
+}
+
+function renderSync(){
+  const on = !!state.icuKey;
+  $("syncOff").hidden = on; $("syncOn").hidden = !on;
+  $("dot").className = "dot " + (on ? "on" : "");
+  if(on){
+    $("syncWho").textContent = (state.icuName ? state.icuName + " · " : "") +
+      (state.icuLast ? "ultimo aggiornamento " + new Date(state.icuLast).toLocaleString("it-IT",
+        {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "mai sincronizzato");
+    $("btnBackfill").textContent = state.icuBackfill ? "Ricontrolla lo storico" : "Recupera lo storico";
+  }
+}
+
+function render(){
+  renderLast(); renderMonths(); renderStats();
+}
+
+/* =========================================================================
+   8. EVENTI
+   ========================================================================= */
+document.querySelectorAll("nav button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x === b));
+    document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === b.dataset.pane));
+    window.scrollTo({top:0, behavior:"instant"});
+  });
+});
+
+$("swPrev").addEventListener("click", () => { swIdx++; renderLast(); window.scrollTo({top:0}); });
+$("swNext").addEventListener("click", () => { swIdx--; renderLast(); window.scrollTo({top:0}); });
+
+$("btnRefresh").addEventListener("click", async () => {
+  if(!state.icuKey){
+    toast("Prima colleghi intervals.icu nelle impostazioni");
+    document.querySelector('nav button[data-pane="paneSet"]').click();
+    return;
+  }
+  await icuSync(); renderSync();
+});
+
+/* ---- import file ---- */
+const drop = $("drop"), fileIn = $("file");
+drop.addEventListener("click", () => fileIn.click());
+["dragenter","dragover","dragleave","drop"].forEach(ev =>
+  drop.addEventListener(ev, e => e.preventDefault()));
+drop.addEventListener("drop", e => handleFiles([...e.dataTransfer.files]));
+fileIn.addEventListener("change", e => { handleFiles([...e.target.files]); e.target.value = ""; });
+
+async function handleFiles(files){
+  const added = [], errs = [];
+  for(const f of files){
+    const ext = f.name.split(".").pop().toLowerCase();
+    try{
+      if(ext === "fit") added.push(fitToSession(parseFIT(await f.arrayBuffer()), f.name, state.athlete.pool));
+      else if(ext === "csv") csvToSessions(await f.text(), f.name, state.athlete.pool).forEach(s => added.push(s));
+      else if(ext === "tcx") added.push(tcxToSession(await f.text(), f.name, state.athlete.pool));
+      else if(ext === "json"){
+        const j = JSON.parse(await f.text());
+        if(j.sessions){ j.sessions.forEach(s => added.push(s)); if(j.athlete) Object.assign(state.athlete, j.athlete); }
+        else errs.push(f.name + ": non è un archivio Corsia");
+      }
+      else if(ext === "zip") errs.push(f.name + ": scompatti lo zip e carichi il .fit");
+      else errs.push(f.name + ": formato non gestito");
+    }catch(e){ errs.push(f.name + ": " + e.message); }
+  }
+  const sig = s => new Date(s.date).toISOString().slice(0,10) + "|" + s.segments.reduce((t,g)=>t+g.meters,0);
+  const have = new Set(state.sessions.map(sig));
+  const icu = new Set(state.sessions.map(s => s.icuId).filter(Boolean));
+  let dup = 0;
+  for(const s of added){
+    if(have.has(sig(s)) || (s.icuId && icu.has(s.icuId))) dup++;
+    else { have.add(sig(s)); state.sessions.push(s); }
+  }
+  syncAthlete(); await store.save(); render();
+  const msgs = [];
+  if(added.length - dup) msgs.push((added.length-dup) + " sessioni aggiunte");
+  if(dup) msgs.push(dup + " già presenti");
+  if(errs.length) msgs.push(errs.join("<br>"));
+  toast(msgs.join(" · ") || "Nessuna sessione trovata");
+}
+
+/* ---- parametri ---- */
+function syncAthlete(){
+  state.athlete.age = +$("age").value || 45;
+  state.athlete.hrMax = +$("hrmax").value || 175;
+  state.athlete.hrRest = +$("hrrest").value || 55;
+  state.athlete.pool = +$("pool").value || 25;
+  state.athlete.kg = +$("kg").value || 75;
+}
+function fillAthlete(){
+  $("age").value = state.athlete.age; $("hrmax").value = state.athlete.hrMax;
+  $("hrrest").value = state.athlete.hrRest; $("pool").value = state.athlete.pool;
+  $("kg").value = state.athlete.kg;
+  if(state.period != null) $("period").value = state.period;
+}
+["age","hrmax","hrrest","pool","kg"].forEach(id =>
+  $(id).addEventListener("change", async () => { syncAthlete(); await store.save(); render(); }));
+$("period").addEventListener("change", async () => {
+  state.period = $("period").value; await store.save(); render();
+});
+$("age").addEventListener("input", () => {
+  const a = +$("age").value;
+  if(a > 9 && a < 100 && !$("hrmax").dataset.manual) $("hrmax").value = Math.round(208 - 0.7*a);
+});
+$("hrmax").addEventListener("input", () => { $("hrmax").dataset.manual = "1"; });
+
+/* ---- collegamento ---- */
+$("btnConnect").addEventListener("click", async () => {
+  const k = $("icuKey").value.trim();
+  if(!k) return toast("Incolli prima la chiave API");
+  const b = $("btnConnect");
+  b.disabled = true; b.textContent = "Verifico…";
+  try{
+    await icuConnect(k);
+    $("icuKey").value = "";
+    renderSync(); toast("Collegato — scarico le nuotate");
+    await icuSync();
+    if(!state.icuBackfill) setSyncStatus($("syncStatus").textContent +
+      " Con «Recupera lo storico» scarico anche tutte le nuotate precedenti.");
+  }catch(e){
+    state.icuKey = ""; toast("Collegamento non riuscito: " + e.message);
+  }finally{ b.disabled = false; b.textContent = "Collega"; }
+  renderSync();
+});
+$("btnBackfill").addEventListener("click", async () => {
+  const b = $("btnBackfill"); b.disabled = true;
+  try{ await icuBackfill(); }
+  finally{ b.disabled = false; setSyncStatus($("syncStatus").textContent, null); }
+});
+$("btnStop").addEventListener("click", () => { icuAbort = true; setSyncStatus("Interrompo…"); });
+$("btnDisconnect").addEventListener("click", async () => {
+  if(!confirm("Scollega intervals.icu. Le nuotate già scaricate restano. Procedere?")) return;
+  state.icuKey = ""; state.icuName = ""; await store.save(); renderSync();
+});
+
+/* ---- archivio ---- */
+$("btnExport").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(state, null, 1)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "corsia-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("Archivio salvato");
+});
+$("btnClear").addEventListener("click", async () => {
+  if(!state.sessions.length) return;
+  if(!confirm("Elimina tutte le nuotate in archivio. Procedere?")) return;
+  state.sessions = []; swIdx = 0; await store.save(); render(); toast("Archivio svuotato");
+});
+$("btnDemo").addEventListener("click", async () => {
+  const plans = [{c:1400,r:400,d:200,x:0},{c:2200,r:0,d:0,x:300},{c:900,r:600,d:100,x:400},
+                 {c:1800,r:300,d:300,x:0},{c:2600,r:0,d:0,x:0},{c:1200,r:500,d:200,x:300}];
+  const now = Date.now();
+  plans.forEach((p, i) => {
+    const date = new Date(now - (i*5 + 1)*86400000);
+    const segs = [];
+    const push = (stroke, meters, pace100, hr) => {
+      let left = meters;
+      while(left > 0){ const m = Math.min(25, left);
+        segs.push({stroke, meters:m, seconds:Math.round(pace100*m/100),
+                   hr:hr + Math.round((Math.random()-0.5)*10)}); left -= m; }
+    };
+    push("crawl", p.c, 105, 138); push("rana", p.r, 135, 128);
+    push("delfino", p.d, 115, 165); push("dorso", p.x, 120, 132);
+    state.sessions.push({id:uid(), date:date.toISOString(), source:"esempio",
+                         name:"Esempio", pool:25, segments:segs});
+  });
+  swIdx = 0; await store.save(); render(); toast("Sei nuotate di esempio caricate");
+  document.querySelector('nav button[data-pane="paneLast"]').click();
+});
+
+/* ---- aggiornamento automatico ---- */
+const FRESH = 20*60*1000;                       // 20 minuti
+async function autoSync(){
+  if(!state.icuKey || icuBusy) return;
+  const age = state.icuLast ? Date.now() - new Date(state.icuLast).getTime() : Infinity;
+  if(age < FRESH) return;
+  const before = state.sessions.length;
+  await icuSync(true);
+  renderSync();
+  if(state.sessions.length > before){          // nuotata nuova: la porto in primo piano
+    swIdx = 0; renderLast();
+    document.querySelector('nav button[data-pane="paneLast"]').click();
+  }
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden) autoSync(); });
+window.addEventListener("focus", autoSync);
+window.addEventListener("online", autoSync);
+setInterval(autoSync, 10*60*1000);
+
+/* ---- avvio ---- */
+(async () => {
+  const saved = await store.load();
+  if(saved && saved.sessions) state = Object.assign(state, saved);
+  fillAthlete(); renderSync(); render();
+  if(location.protocol === "file:"){
+    const n = document.createElement("p");
+    n.className = "note warn";
+    n.textContent = "La pagina è aperta come file locale: il collegamento automatico non può funzionare. " +
+                    "La metta su un indirizzo web e la aggiunga alla schermata Home.";
+    $("syncOff").appendChild(n);
+  }
+  autoSync();
+})();
+
+</script>
+</body>
+</html>
